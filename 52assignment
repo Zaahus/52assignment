@@ -1,0 +1,230 @@
+
+[ec2-user@ip-172-31-38-170 ~]$ sudo su -
+Last login: Thu Sep 28 09:45:36 UTC 2023 on pts/0
+[root@ip-172-31-38-170 ~]# kubectl get aa
+error: the server doesn't have a resource type "aa"
+[root@ip-172-31-38-170 ~]# kubectl get all
+NAME                          READY   STATUS    RESTARTS   AGE
+pod/db-b54cd94f4-ksg2q        1/1     Running   0          3d19h
+pod/redis-868d64d78-7hd4l     1/1     Running   0          3d21h
+pod/result-5d57b59f4b-qf4xb   1/1     Running   1          3d21h
+pod/vote-94849dc97-b5pg2      1/1     Running   0          3d19h
+pod/worker-dd46d7584-vnkj6    1/1     Running   1          3d19h
+
+NAME                 TYPE        CLUSTER-IP       EXTERNAL-IP   PORT(S)          AGE
+service/db           ClusterIP   10.101.178.210   <none>        5432/TCP         3d21h
+service/kubernetes   ClusterIP   10.96.0.1        <none>        443/TCP          3d21h
+service/redis        ClusterIP   10.104.226.118   <none>        6379/TCP         3d21h
+service/result       NodePort    10.108.77.95     <none>        5001:31003/TCP   3d21h
+service/vote         NodePort    10.100.169.168   <none>        5000:31002/TCP   3d21h
+
+NAME                     READY   UP-TO-DATE   AVAILABLE   AGE
+deployment.apps/db       1/1     1            1           3d21h
+deployment.apps/redis    1/1     1            1           3d21h
+deployment.apps/result   1/1     1            1           3d21h
+deployment.apps/vote     1/1     1            1           3d21h
+deployment.apps/worker   1/1     1            1           3d21h
+
+NAME                                DESIRED   CURRENT   READY   AGE
+replicaset.apps/db-b54cd94f4        1         1         1       3d21h
+replicaset.apps/redis-868d64d78     1         1         1       3d21h
+replicaset.apps/result-5d57b59f4b   1         1         1       3d21h
+replicaset.apps/vote-94849dc97      1         1         1       3d21h
+replicaset.apps/worker-dd46d7584    1         1         1       3d21h
+[root@ip-172-31-38-170 ~]# kubectl get pod
+NAME                      READY   STATUS    RESTARTS   AGE
+db-b54cd94f4-ksg2q        1/1     Running   0          3d19h
+redis-868d64d78-7hd4l     1/1     Running   0          3d21h
+result-5d57b59f4b-qf4xb   1/1     Running   1          3d21h
+vote-94849dc97-b5pg2      1/1     Running   0          3d19h
+worker-dd46d7584-vnkj6    1/1     Running   1          3d19h
+[root@ip-172-31-38-170 ~]# ls
+example-voting-app
+[root@ip-172-31-38-170 ~]# cd example-voting-app
+[root@ip-172-31-38-170 example-voting-app]# ls -lrth
+total 96K
+-rw-r--r-- 1 root root  11K Sep 28 10:10 LICENSE
+drwxr-xr-x 3 root root   70 Sep 28 10:10 worker
+drwxr-xr-x 4 root root   93 Sep 28 10:10 vote
+drwxr-xr-x 5 root root  133 Sep 28 10:10 result
+-rw-r--r-- 1 root root 2.2K Sep 28 10:10 README.md
+-rw-r--r-- 1 root root  185 Sep 28 10:10 MAINTAINERS
+-rw-r--r-- 1 root root 1.7K Sep 28 10:10 docker-stack.yml
+-rw-r--r-- 1 root root  808 Sep 28 10:10 docker-compose.yml
+-rw-r--r-- 1 root root  400 Sep 28 10:10 docker-compose-simple.yml
+-rw-r--r-- 1 root root  808 Sep 28 10:10 docker-compose-javaworker.yml
+-rw-r--r-- 1 root root  609 Sep 28 10:10 dockercloud.yml
+-rw-r--r-- 1 root root  54K Sep 28 10:10 architecture.png
+drwxr-xr-x 3 root root  276 Sep 28 10:38 k8s-specifications
+[root@ip-172-31-38-170 example-voting-app]# cd k8s-specifications
+[root@ip-172-31-38-170 k8s-specifications]# ls
+db-deployment.yaml  example-voting-app     redis-service.yaml      result-service.yaml   vote-service.yaml
+db-service.yaml     redis-deployment.yaml  result-deployment.yaml  vote-deployment.yaml  worker-deployment.yaml
+[root@ip-172-31-38-170 k8s-specifications]# vi vote-service.yaml
+[root@ip-172-31-38-170 k8s-specifications]# vi result-service.yaml
+[root@ip-172-31-38-170 k8s-specifications]# kubectl apply -f .
+deployment.apps/db unchanged
+service/db unchanged
+deployment.apps/redis unchanged
+service/redis unchanged
+deployment.apps/result unchanged
+service/result configured
+deployment.apps/vote unchanged
+service/vote configured
+deployment.apps/worker unchanged
+[root@ip-172-31-38-170 k8s-specifications]# kubectl logs result-service.yaml
+Error from server (NotFound): pods "result-service.yaml" not found
+[root@ip-172-31-38-170 k8s-specifications]# kubectl get pod
+NAME                      READY   STATUS    RESTARTS   AGE
+db-b54cd94f4-ksg2q        1/1     Running   0          3d19h
+redis-868d64d78-7hd4l     1/1     Running   0          3d21h
+result-5d57b59f4b-qf4xb   1/1     Running   1          3d21h
+vote-94849dc97-b5pg2      1/1     Running   0          3d19h
+worker-dd46d7584-vnkj6    1/1     Running   1          3d19h
+
+[root@ip-172-31-38-170 k8s-specifications]# kubectl delete pod result-5d57b59f4b-qf4xb
+pod "result-5d57b59f4b-qf4xb" deleted
+
+[root@ip-172-31-38-170 k8s-specifications]# kubectl delete pod vote-94849dc97-b5pg2
+pod "vote-94849dc97-b5pg2" deleted
+
+
+[root@ip-172-31-38-170 k8s-specifications]# kubectl logs result-5d57b59f4b-qf4xb
+Fri, 29 Sep 2023 08:43:35 GMT body-parser deprecated bodyParser: use individual json/urlencoded middlewares at server.js:73:9
+Fri, 29 Sep 2023 08:43:35 GMT body-parser deprecated undefined extended: provide extended option at ../node_modules/body-parser/index.js:104:29
+App running on port 80
+Connected to db
+Error performing query: error: relation "votes" does not exist
+Error performing query: error: relation "votes" does not exist
+Error performing query: error: relation "votes" does not exist
+[root@ip-172-31-38-170 k8s-specifications]# kubectl logs result-5d57b59f4b-qf4xb
+Fri, 29 Sep 2023 08:43:35 GMT body-parser deprecated bodyParser: use individual json/urlencoded middlewares at server.js:73:9
+Fri, 29 Sep 2023 08:43:35 GMT body-parser deprecated undefined extended: provide extended option at ../node_modules/body-parser/index.js:104:29
+App running on port 80
+Connected to db
+Error performing query: error: relation "votes" does not exist
+Error performing query: error: relation "votes" does not exist
+Error performing query: error: relation "votes" does not exist
+[root@ip-172-31-38-170 k8s-specifications]# kubectl logs vote-94849dc97-b5pg2
+[2023-09-29 08:36:20 +0000] [1] [INFO] Starting gunicorn 20.1.0
+[2023-09-29 08:36:20 +0000] [1] [INFO] Listening at: http://0.0.0.0:80 (1)
+[2023-09-29 08:36:20 +0000] [1] [INFO] Using worker: sync
+[2023-09-29 08:36:20 +0000] [6] [INFO] Booting worker with pid: 6
+[2023-09-29 08:36:20 +0000] [7] [INFO] Booting worker with pid: 7
+[2023-09-29 08:36:20 +0000] [8] [INFO] Booting worker with pid: 8
+[2023-09-29 08:36:20 +0000] [9] [INFO] Booting worker with pid: 9
+[2023-09-29 08:36:25,760] INFO in app: Received vote for a
+[2023-09-29 08:36:25 +0000] [7] [INFO] Received vote for a
+192.168.199.64 - - [29/Sep/2023:08:36:25 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:36:25 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:36:27,436] INFO in app: Received vote for b
+[2023-09-29 08:36:27 +0000] [8] [INFO] Received vote for b
+192.168.199.64 - - [29/Sep/2023:08:36:27 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:36:27 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:40:01,607] INFO in app: Received vote for a
+[2023-09-29 08:40:01 +0000] [9] [INFO] Received vote for a
+192.168.199.64 - - [29/Sep/2023:08:40:02 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:40:02 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:40:04,255] INFO in app: Received vote for b
+[2023-09-29 08:40:04 +0000] [8] [INFO] Received vote for b
+192.168.199.64 - - [29/Sep/2023:08:40:04 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:40:04 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:40:08,990] INFO in app: Received vote for a
+[2023-09-29 08:40:08 +0000] [6] [INFO] Received vote for a
+192.168.199.64 - - [29/Sep/2023:08:40:09 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:40:09 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:40:10,827] INFO in app: Received vote for b
+[2023-09-29 08:40:10 +0000] [7] [INFO] Received vote for b
+192.168.199.64 - - [29/Sep/2023:08:40:10 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:40:10 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:43:09,141] INFO in app: Received vote for a
+[2023-09-29 08:43:09 +0000] [8] [INFO] Received vote for a
+192.168.199.64 - - [29/Sep/2023:08:43:09 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:43:09 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:43:11,036] INFO in app: Received vote for b
+[2023-09-29 08:43:11 +0000] [6] [INFO] Received vote for b
+192.168.199.64 - - [29/Sep/2023:08:43:11 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:43:11 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:43:12,819] INFO in app: Received vote for a
+[2023-09-29 08:43:12 +0000] [9] [INFO] Received vote for a
+192.168.199.64 - - [29/Sep/2023:08:43:12 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:43:12 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:43:16,899] INFO in app: Received vote for b
+[2023-09-29 08:43:16 +0000] [8] [INFO] Received vote for b
+192.168.199.64 - - [29/Sep/2023:08:43:16 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:43:16 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:43:24,027] INFO in app: Received vote for a
+[2023-09-29 08:43:24 +0000] [7] [INFO] Received vote for a
+192.168.199.64 - - [29/Sep/2023:08:43:24 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:43:24 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:43:25,471] INFO in app: Received vote for b
+[2023-09-29 08:43:25 +0000] [6] [INFO] Received vote for b
+192.168.199.64 - - [29/Sep/2023:08:43:25 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:43:25 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:43:27,333] INFO in app: Received vote for a
+[2023-09-29 08:43:27 +0000] [9] [INFO] Received vote for a
+192.168.199.64 - - [29/Sep/2023:08:43:27 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:43:27 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:43:28,774] INFO in app: Received vote for b
+[2023-09-29 08:43:28 +0000] [8] [INFO] Received vote for b
+192.168.199.64 - - [29/Sep/2023:08:43:28 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:43:28 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:50:17,083] INFO in app: Received vote for a
+[2023-09-29 08:50:17 +0000] [7] [INFO] Received vote for a
+192.168.199.64 - - [29/Sep/2023:08:50:17 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:50:17 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+[2023-09-29 08:50:18,658] INFO in app: Received vote for b
+[2023-09-29 08:50:18 +0000] [9] [INFO] Received vote for b
+192.168.199.64 - - [29/Sep/2023:08:50:18 +0000] "POST / HTTP/1.1" 200 1696 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.199.64 - - [29/Sep/2023:08:50:18 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://18.143.185.26:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.43"
+192.168.64.64 - - [29/Sep/2023:19:42:26 +0000] "GET / HTTP/1.1" 200 1293 "-" "Mozilla/5.0 (compatible; InternetMeasurement/1.0; +https://internet-measurement.com/)"
+192.168.64.64 - - [02/Oct/2023:19:54:24 +0000] "GET / HTTP/1.1" 200 1293 "-" "Mozilla/5.0 (compatible; InternetMeasurement/1.0; +https://internet-measurement.com/)"
+172.31.38.170 - - [03/Oct/2023:04:03:23 +0000] "GET / HTTP/1.1" 200 1293 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:03:23 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 200 0 "http://13.212.232.109:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:03:23 +0000] "GET /favicon.ico HTTP/1.1" 404 207 "http://13.212.232.109:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+[2023-10-03 04:03:27,159] INFO in app: Received vote for a
+[2023-10-03 04:03:27 +0000] [9] [INFO] Received vote for a
+172.31.38.170 - - [03/Oct/2023:04:03:27 +0000] "POST / HTTP/1.1" 200 1696 "http://13.212.232.109:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:03:27 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.232.109:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+[2023-10-03 04:03:29,420] INFO in app: Received vote for b
+[2023-10-03 04:03:29 +0000] [6] [INFO] Received vote for b
+172.31.38.170 - - [03/Oct/2023:04:03:29 +0000] "POST / HTTP/1.1" 200 1696 "http://13.212.232.109:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:03:29 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.232.109:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+[2023-10-03 04:03:30,007] INFO in app: Received vote for a
+[2023-10-03 04:03:30 +0000] [8] [INFO] Received vote for a
+172.31.38.170 - - [03/Oct/2023:04:03:30 +0000] "POST / HTTP/1.1" 200 1696 "http://13.212.232.109:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:03:30 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.232.109:31002/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:04:06 +0000] "GET / HTTP/1.1" 200 1293 "-" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:04:06 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:04:06 +0000] "GET /favicon.ico HTTP/1.1" 404 207 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+[2023-10-03 04:04:08,117] INFO in app: Received vote for a
+[2023-10-03 04:04:08 +0000] [7] [INFO] Received vote for a
+172.31.38.170 - - [03/Oct/2023:04:04:08 +0000] "POST / HTTP/1.1" 200 1696 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:04:08 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+[2023-10-03 04:04:24,277] INFO in app: Received vote for b
+[2023-10-03 04:04:24 +0000] [8] [INFO] Received vote for b
+172.31.38.170 - - [03/Oct/2023:04:04:24 +0000] "POST / HTTP/1.1" 200 1696 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:04:24 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+[2023-10-03 04:04:27,379] INFO in app: Received vote for a
+[2023-10-03 04:04:27 +0000] [6] [INFO] Received vote for a
+172.31.38.170 - - [03/Oct/2023:04:04:27 +0000] "POST / HTTP/1.1" 200 1696 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:04:27 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+[2023-10-03 04:04:31,586] INFO in app: Received vote for b
+[2023-10-03 04:04:31 +0000] [7] [INFO] Received vote for b
+172.31.38.170 - - [03/Oct/2023:04:04:31 +0000] "POST / HTTP/1.1" 200 1696 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:04:31 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+[2023-10-03 04:04:37,135] INFO in app: Received vote for a
+[2023-10-03 04:04:37 +0000] [9] [INFO] Received vote for a
+172.31.38.170 - - [03/Oct/2023:04:04:37 +0000] "POST / HTTP/1.1" 200 1696 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:04:37 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+[2023-10-03 04:04:40,691] INFO in app: Received vote for b
+[2023-10-03 04:04:40 +0000] [7] [INFO] Received vote for b
+172.31.38.170 - - [03/Oct/2023:04:04:40 +0000] "POST / HTTP/1.1" 200 1696 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+172.31.38.170 - - [03/Oct/2023:04:04:40 +0000] "GET /static/stylesheets/style.css HTTP/1.1" 304 0 "http://13.212.232.109:31004/" "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/117.0.0.0 Safari/537.36 Edg/117.0.2045.47"
+[root@ip-172-31-38-170 k8s-specifications]#
+
+Obeservation:
+We had changed the node port at worker side and voting result is working fine.
+
+Query:
+What will be the effect if namespace is wrong . eg: correct namespace is 52assignment but if it wrongly created as 5as2signment.
